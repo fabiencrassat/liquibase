@@ -3,6 +3,7 @@ package liquibase.change;
 import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
+import java.io.UnsupportedEncodingException;
 
 import static org.junit.Assert.*;
 
@@ -98,5 +99,46 @@ public class CheckSumTest {
         assertEquals(checkSum, CheckSum.compute(new ByteArrayInputStream("a string\n\nwith\n\nlines".getBytes()), true).toString());
         assertEquals(checkSum, CheckSum.compute(new ByteArrayInputStream("a string\r\rwith\r\rlines".getBytes()), true).toString());
         assertEquals(checkSum, CheckSum.compute(new ByteArrayInputStream("a string\r\n\r\nwith\r\n\r\nlines".getBytes()), true).toString());
+    }
+
+    /*
+    * cd liquibase-core
+    *
+    * On Windows powershell:
+    * > mvn -Dtest='liquibase.change.CheckSumTest' test
+    *   - compute_inputStreamSpecialCharacters         fails with 8:0f2f39ab98028d13b51a6b686d3d7c89 md5
+    *   - compute_inputStreamSpecialCharacterssWithISO fails with 8:5d489836209736e5f781feb17bc3a6ac md5
+    * > mvn -D'file.encoding'=UTF-8 -Dtest='liquibase.change.CheckSumTest' test
+    *   - compute_inputStreamSpecialCharacters         fails with 8:0f2f39ab98028d13b51a6b686d3d7c89 md5
+    *   - compute_inputStreamSpecialCharacterssWithISO fails with 8:5d489836209736e5f781feb17bc3a6ac md5
+    *
+    * On Linux bash shell:
+    * > mvn -Dtest=liquibase.change.CheckSumTest test
+    *   - compute_inputStreamSpecialCharacters does not fail
+    * > mvn -Dfile.encoding=UTF-8 -Dtest=liquibase.change.CheckSumTest test
+    *   - compute_inputStreamSpecialCharacters does not fail
+    *
+    */
+    private static final String TEST_STRING_SPECIAL_CHARACTERS = "² & é~ # '{ ([ -| è` _ ç^ à@ )°] =+} ^¨ $£¤ ù% *µ ,? ;. :/ !§ €êë îïì";
+    private static final String TEST_STRING_SPECIAL_CHARACTERS_MD5_HASH = "8:6adc50b9de9cfc3b3e790257a7e1c08b";
+    @Test
+    public void compute_specialCharacters() {
+        String checkSum = CheckSum.compute(TEST_STRING_SPECIAL_CHARACTERS).toString();
+        assertEquals(TEST_STRING_SPECIAL_CHARACTERS_MD5_HASH, checkSum);
+    }
+    @Test
+    public void compute_inputStreamSpecialCharacters() {
+        String inputStreamCheckSum = CheckSum.compute(new ByteArrayInputStream(TEST_STRING_SPECIAL_CHARACTERS.getBytes()), true).toString();
+        assertEquals(TEST_STRING_SPECIAL_CHARACTERS_MD5_HASH, inputStreamCheckSum);
+    }
+    @Test
+    public void compute_inputStreamSpecialCharactersWithUTF8() throws UnsupportedEncodingException {
+        String inputStreamCheckSum = CheckSum.compute(new ByteArrayInputStream(TEST_STRING_SPECIAL_CHARACTERS.getBytes("UTF-8")), true).toString();
+        assertEquals(TEST_STRING_SPECIAL_CHARACTERS_MD5_HASH, inputStreamCheckSum);
+    }
+    @Test
+    public void compute_inputStreamSpecialCharacterssWithISO() throws UnsupportedEncodingException {
+        String inputStreamCheckSum = CheckSum.compute(new ByteArrayInputStream(TEST_STRING_SPECIAL_CHARACTERS.getBytes("ISO-8859-1")), true).toString();
+        assertEquals(TEST_STRING_SPECIAL_CHARACTERS_MD5_HASH, inputStreamCheckSum);
     }
 }
