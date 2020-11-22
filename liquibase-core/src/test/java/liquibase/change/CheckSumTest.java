@@ -114,9 +114,9 @@ public class CheckSumTest {
     *
     * On Linux bash shell:
     * > mvn -Dtest=liquibase.change.CheckSumTest test
-    *   - compute_inputStreamSpecialCharacters does not fail
+    *   - compute_inputStreamSpecialCharacterssWithISO fails with 8:5d489836209736e5f781feb17bc3a6ac md5
     * > mvn -Dfile.encoding=UTF-8 -Dtest=liquibase.change.CheckSumTest test
-    *   - compute_inputStreamSpecialCharacters does not fail
+    *   - compute_inputStreamSpecialCharacterssWithISO fails with 8:5d489836209736e5f781feb17bc3a6ac md5
     *
     */
     private static final String TEST_STRING_SPECIAL_CHARACTERS = "² & é~ # '{ ([ -| è` _ ç^ à@ )°] =+} ^¨ $£¤ ù% *µ ,? ;. :/ !§ €êë îïì";
